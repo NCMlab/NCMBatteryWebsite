@@ -5,7 +5,7 @@ import { useAuth } from "../AuthContext";
 import { KINDS } from "./kinds";
 import ParameterEditor from "./ParameterEditor";
 
-/** Read-only view of one parameter or instruction set, and the batteries that use it. */
+/** Read-only view of one parameter set, and the batteries that use it (instruction sets: InstructionSetView). */
 function ConfigView() {
   const { kind, id } = useParams();
   const cfg = KINDS[kind];

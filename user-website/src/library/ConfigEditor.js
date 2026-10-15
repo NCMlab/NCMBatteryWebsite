@@ -8,9 +8,10 @@ import { KINDS } from "./kinds";
 import { NAME_PATTERN, suggestCopyName } from "./copyName";
 
 /**
- * Creates a parameter/instruction set, either from scratch (/library/:kind/new)
- * or as an edited copy of an existing one (/library/:kind/:id/copy). Always
+ * Creates a parameter set, either from scratch (/library/parameter/new)
+ * or as an edited copy of an existing one (/library/parameter/:id/copy). Always
  * saves a NEW row -- the source set is only read, never modified.
+ * Instruction sets have their own editor (InstructionSetEditor).
  */
 function ConfigEditor() {
   const { kind, id } = useParams();
@@ -63,7 +64,7 @@ function ConfigEditor() {
   if (!cfg) return <p className="error-text">Unknown library "{kind}".</p>;
   if (loading) return <p className="app-container">Loading...</p>;
 
-  // Only parameter sets have schemas; instruction sets are always edited as JSON.
+  // Parameter sets are edited with the task's form when it has a schema, else as JSON.
   const schemaDef =
     kind === "parameter" ? taskTypes.find((t) => t.task_type_id === Number(taskTypeId))?.parameter_schema ?? null : null;
 

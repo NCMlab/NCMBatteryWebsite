@@ -32,7 +32,10 @@ function BatteryView({ draft, setDraft }) {
     }
     try {
       const rec = await api.getRecord(type, id);
-      setExpanded((e) => ({ ...e, [key]: type === "parameter" ? rec.parameters : rec.instructions }));
+      // An instruction set is shown as { "EN": {...}, "FR": {...} }.
+      const body =
+        type === "parameter" ? rec.parameters : Object.fromEntries(rec.translations.map((t) => [t.language, t.instructions]));
+      setExpanded((e) => ({ ...e, [key]: body }));
     } catch (err) {
       setError(err.message);
     }
@@ -130,8 +133,12 @@ function BatteryView({ draft, setDraft }) {
                     {jsonToggle(
                       t.sort_order,
                       "instruction",
-                      t.instruction_id,
-                      t.instruction_name && `${t.instruction_name} (${t.instruction_language})`
+                      t.instruction_set_id,
+                      t.instruction_name && (
+                        <Link to={`/library/instruction/${t.instruction_set_id}`}>
+                          {t.instruction_name} ({t.instruction_languages.join(", ")})
+                        </Link>
+                      )
                     )}
                   </td>
                 </tr>

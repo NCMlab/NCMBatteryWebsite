@@ -99,7 +99,7 @@ function Home({ draft, setDraft }) {
         tasks: items.map((item) => ({
           task_type_id: item.taskTypeId,
           parameter_id: item.parameterId,
-          instruction_id: item.instructionId || null,
+          instruction_set_id: item.instructionSetId || null,
           icon_name: item.iconName || item.parameterName,
         })),
       });
@@ -165,7 +165,11 @@ function Home({ draft, setDraft }) {
                   <br />
                   Parameters: {item.parameterName || <i>not saved yet</i>}
                   {" · "}Instructions:{" "}
-                  {item.instructionName ? `${item.instructionName} (${item.instructionLanguage})` : <i>none</i>}
+                  {item.instructionName ? (
+                    `${item.instructionName} (${(item.instructionLanguages || []).join(", ")})`
+                  ) : (
+                    <i>none</i>
+                  )}
                 </span>
                 <button onClick={() => move(i, -1)} disabled={i === 0} title="Move up">
                   ↑

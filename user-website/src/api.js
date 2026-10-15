@@ -44,6 +44,7 @@ export function listTaskTypes() {
 
 // taskTypeId is optional for both: omit it to list every task type's sets.
 // Each row includes used_by (how many battery tasks reference the set).
+// Instruction rows are sets: { instruction_set_id, instruction_name, languages: ["EN","FR"], ... }.
 export function listParameters(taskTypeId) {
   const q = taskTypeId ? `&task_type_id=${taskTypeId}` : "";
   return getJSON(`${API_BASE}/API_list_config.php?resource=parameters${q}`);
@@ -93,10 +94,20 @@ export function createParameter(csrfToken, { taskTypeId, taskName, parameterName
   );
 }
 
-export function createInstruction(csrfToken, { taskTypeId, taskName, instructionName, language, instructions }) {
+/** Creates a new instruction set; translations is { EN: {...}, FR: {...} }. */
+export function createInstruction(csrfToken, { taskTypeId, taskName, instructionName, translations }) {
   return postJSON(
     `${ADMIN_API_BASE}/API_admin_create_instruction.php`,
-    { task_type_id: taskTypeId, task_name: taskName, instruction_name: instructionName, language, instructions },
+    { task_type_id: taskTypeId, task_name: taskName, instruction_name: instructionName, translations },
+    csrfToken
+  );
+}
+
+/** Adds one language to an existing instruction set (refused if it already has it). */
+export function addTranslation(csrfToken, { instructionSetId, language, instructions }) {
+  return postJSON(
+    `${ADMIN_API_BASE}/API_admin_add_translation.php`,
+    { instruction_set_id: instructionSetId, language, instructions },
     csrfToken
   );
 }
@@ -109,7 +120,7 @@ export function createBattery(csrfToken, batteryPayload) {
 // Nothing is edited in place: the UI loads a record with getRecord(), and saves
 // changes as a NEW record via createParameter/createInstruction/createBattery.
 
-/** type is "parameter" | "instruction" | "battery"; id is that table's primary key. */
+/** type is "parameter" | "instruction" | "battery"; id is that table's primary key (instruction_set_id for instructions). */
 export function getRecord(type, id) {
   const q = new URLSearchParams({ type, id });
   return fetch(`${ADMIN_API_BASE}/API_admin_get.php?${q}`, { credentials: "include" }).then(handleResponse);
@@ -118,6 +129,11 @@ export function getRecord(type, id) {
 /** Refused by the server if a parameter/instruction set is in use, or a battery is still active. */
 export function deleteRecord(csrfToken, type, id) {
   return postJSON(`${ADMIN_API_BASE}/API_admin_delete.php`, { type, id }, csrfToken);
+}
+
+/** Removes one language from an instruction set; refused while a battery uses the set. */
+export function deleteTranslation(csrfToken, instructionSetId, language) {
+  return postJSON(`${ADMIN_API_BASE}/API_admin_delete.php`, { type: "translation", id: instructionSetId, language }, csrfToken);
 }
 
 export function setBatteryActive(csrfToken, batteryId, active) {

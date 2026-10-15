@@ -19,8 +19,8 @@ export const emptyDraft = () => ({
     languages_to_show: "",
     redirect_url: "",
   },
-  // [{ id, taskTypeId, name, parameterId, parameterName, instructionId, instructionName,
-  //    instructionLanguage, iconName }] in run order
+  // [{ id, taskTypeId, name, parameterId, parameterName, instructionSetId, instructionName,
+  //    instructionLanguages, iconName }] in run order
   items: [],
 });
 
@@ -47,9 +47,9 @@ export function draftFromBattery(b) {
       name: t.task_name,
       parameterId: t.parameter_id,
       parameterName: t.parameter_name,
-      instructionId: t.instruction_id,
+      instructionSetId: t.instruction_set_id,
       instructionName: t.instruction_name,
-      instructionLanguage: t.instruction_language,
+      instructionLanguages: t.instruction_languages ?? [],
       iconName: t.icon_name ?? "",
     })),
   };

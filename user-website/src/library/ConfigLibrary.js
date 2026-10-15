@@ -44,7 +44,7 @@ function ConfigLibrary() {
   if (!cfg) return <p className="error-text">Unknown library "{kind}".</p>;
 
   const handleDelete = async (row) => {
-    if (!window.confirm(`Permanently delete ${cfg.label} "${row[cfg.nameKey]}" (${row.task_name}, ${row.language})?`)) {
+    if (!window.confirm(`Permanently delete ${cfg.label} "${row[cfg.nameKey]}" (${row.task_name}, ${cfg.languagesOf(row)})?`)) {
       return;
     }
     setError(null);
@@ -90,7 +90,7 @@ function ConfigLibrary() {
             <tr>
               <th>Task</th>
               <th>Name</th>
-              <th>Lang</th>
+              <th>{cfg.languageHeader}</th>
               <th>Used by</th>
               <th>Created</th>
               <th />
@@ -101,7 +101,7 @@ function ConfigLibrary() {
               <tr key={r[cfg.idKey]}>
                 <td>{r.task_name}</td>
                 <td>{r[cfg.nameKey]}</td>
-                <td>{r.language}</td>
+                <td>{cfg.languagesOf(r)}</td>
                 <td>{r.used_by === 0 ? "—" : `${r.used_by} battery task${r.used_by === 1 ? "" : "s"}`}</td>
                 <td>{r.created_at?.slice(0, 10)}</td>
                 <td className="row-actions">

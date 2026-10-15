@@ -9,6 +9,8 @@ import BatteryView from "./BatteryView";
 import ConfigLibrary from "./library/ConfigLibrary";
 import ConfigEditor from "./library/ConfigEditor";
 import ConfigView from "./library/ConfigView";
+import InstructionSetView from "./library/InstructionSetView";
+import InstructionSetEditor from "./library/InstructionSetEditor";
 import { AuthProvider, useAuth } from "./AuthContext";
 import { emptyDraft } from "./draft";
 import "./App.css";
@@ -85,7 +87,41 @@ function AppRoutes() {
           </RequireAuth>
         }
       />
-      {/* :kind is "parameter" or "instruction" */}
+      {/* Instruction sets have their own view/editor pages (several languages per set); these
+          static routes win over the /library/:kind/... ones below. */}
+      <Route
+        path="/library/instruction/new"
+        element={
+          <RequireAuth>
+            <InstructionSetEditor mode="new" key="new" />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/library/instruction/:id"
+        element={
+          <RequireAuth>
+            <InstructionSetView />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/library/instruction/:id/copy"
+        element={
+          <RequireAuth>
+            <InstructionSetEditor mode="copy" key="copy" />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/library/instruction/:id/add-language"
+        element={
+          <RequireAuth>
+            <InstructionSetEditor mode="addLanguage" key="addLanguage" />
+          </RequireAuth>
+        }
+      />
+      {/* :kind is "parameter" or "instruction" (the list page is shared) */}
       <Route
         path="/library/:kind"
         element={

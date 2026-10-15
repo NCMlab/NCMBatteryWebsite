@@ -4,7 +4,7 @@ import * as api from "./api";
 import { useAuth } from "./AuthContext";
 import { parseJson } from "./library/JsonEditor";
 import ParameterEditor, { defaultParameters, validateParameters } from "./library/ParameterEditor";
-import { NAME_PATTERN, suggestCopyName } from "./library/copyName";
+import { NAME_PATTERN, parseList, suggestCopyName } from "./library/copyName";
 
 /**
  * Settings for one task in the battery being built: which parameter set and
@@ -24,7 +24,7 @@ function FormSettings({ draft, saveFormSettings }) {
   const [taskName, setTaskName] = useState("");
   const [schemaDef, setSchemaDef] = useState(null); // task_types.parameter_schema, if any
   const [params, setParams] = useState([]); // [{parameter_id, parameter_name, language, used_by}]
-  const [instructions, setInstructions] = useState([]); // [{instruction_id, instruction_name, language, used_by}]
+  const [instructions, setInstructions] = useState([]); // [{instruction_set_id, instruction_name, languages, used_by}]
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [saveError, setSaveError] = useState(null);
@@ -35,7 +35,7 @@ function FormSettings({ draft, saveFormSettings }) {
   const [text, setText] = useState("{\n  \n}");
   const [newName, setNewName] = useState("");
   const [language, setLanguage] = useState(draft.header.language);
-  const [instructionId, setInstructionId] = useState(item?.instructionId ?? "");
+  const [instructionSetId, setInstructionSetId] = useState(item?.instructionSetId ?? "");
   const [iconName, setIconName] = useState(item?.iconName ?? "");
 
   useEffect(() => {
@@ -91,7 +91,10 @@ function FormSettings({ draft, saveFormSettings }) {
     }
   };
 
-  const chosenInstruction = instructions.find((i) => String(i.instruction_id) === String(instructionId));
+  const chosenInstruction = instructions.find((i) => String(i.instruction_set_id) === String(instructionSetId));
+  // Languages the battery can run in: its own, plus any the participant may pick.
+  const batteryLanguages = [...new Set([draft.header.language, ...(parseList(draft.header.languages_to_show) || [])])];
+  const missingLanguages = chosenInstruction ? batteryLanguages.filter((l) => !chosenInstruction.languages.includes(l)) : [];
   const parsed = parseJson(text);
 
   const finish = (parameterId, parameterName) => {
@@ -101,9 +104,9 @@ function FormSettings({ draft, saveFormSettings }) {
       name: taskName,
       parameterId,
       parameterName,
-      instructionId: chosenInstruction ? chosenInstruction.instruction_id : null,
+      instructionSetId: chosenInstruction ? chosenInstruction.instruction_set_id : null,
       instructionName: chosenInstruction?.instruction_name ?? null,
-      instructionLanguage: chosenInstruction?.language ?? null,
+      instructionLanguages: chosenInstruction?.languages ?? [],
       iconName,
     });
     navigate("/");
@@ -257,22 +260,31 @@ function FormSettings({ draft, saveFormSettings }) {
       )}
 
       <h3>Instruction set</h3>
-      <select value={instructionId} onChange={(e) => setInstructionId(e.target.value)}>
+      <select value={instructionSetId} onChange={(e) => setInstructionSetId(e.target.value)}>
         <option value="">-- none --</option>
         {instructions.map((i) => (
-          <option key={i.instruction_id} value={i.instruction_id}>
-            {i.instruction_name} ({i.language})
+          <option key={i.instruction_set_id} value={i.instruction_set_id}>
+            {i.instruction_name} ({i.languages.join(", ")})
           </option>
         ))}
       </select>
-      {chosenInstruction && chosenInstruction.language !== draft.header.language && (
+      {chosenInstruction && (
+        <>
+          {" "}
+          <Link to={`/library/instruction/${chosenInstruction.instruction_set_id}`}>View</Link>
+        </>
+      )}
+      {missingLanguages.length > 0 && (
         <p className="warn-text">
-          This instruction set is {chosenInstruction.language}, but the battery language is {draft.header.language}.
+          This battery can run in {batteryLanguages.join(", ")}, but "{chosenInstruction.instruction_name}" has no{" "}
+          {missingLanguages.join(", ")} text. Add the language on the{" "}
+          <Link to={`/library/instruction/${chosenInstruction.instruction_set_id}/add-language`}>instruction set page</Link>.
         </p>
       )}
       <p className="hint">
-        To create or edit instruction sets, use the <Link to="/library/instruction">Instruction sets</Link> page; this
-        battery stays in the builder while you do.
+        The participant's language picks the translation when the task runs. To create, translate or edit instruction
+        sets, use the <Link to="/library/instruction">Instruction sets</Link> page; this battery stays in the builder
+        while you do.
       </p>
 
       <h3>Display label</h3>

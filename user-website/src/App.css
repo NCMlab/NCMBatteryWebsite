@@ -454,3 +454,165 @@ button.danger {
 .parameter-editor .glyphicon-arrow-up::before { content: "↑"; font-style: normal; }
 .parameter-editor .glyphicon-arrow-down::before { content: "↓"; font-style: normal; }
 .parameter-editor .glyphicon-copy::before { content: "⧉"; font-style: normal; }
+
+/* -- Instruction sets: text-box editor (library/InstructionFields.js) -- */
+
+.language-bar {
+  margin: 16px 0 4px;
+  padding: 8px 12px;
+  background-color: #f2f5f8;
+  border-radius: 4px;
+}
+
+.language-bar select {
+  font-size: 1em;
+  padding: 4px;
+}
+
+.lang-code-input {
+  width: 3em;
+  text-transform: uppercase;
+}
+
+.instruction-fields {
+  max-width: 900px;
+}
+
+.instr-preview-toggle {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.instr-field {
+  margin: 0 0 14px;
+}
+
+.instr-label {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.instr-field input[type="text"],
+.instr-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px;
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+}
+
+.instr-field textarea {
+  resize: vertical;
+}
+
+.instr-field input.instr-code,
+code.instr-code {
+  font-family: monospace;
+  font-size: 13px;
+  background-color: #f6f6f6;
+  color: #444;
+}
+
+.instr-check {
+  font-weight: bold;
+}
+
+.code-badge,
+.lang-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: normal;
+  vertical-align: middle;
+}
+
+.code-badge {
+  background-color: #eee;
+  color: #555;
+}
+
+.lang-badge {
+  margin: 0 6px 0 0;
+  background-color: #dde7f3;
+  color: #1a4d8f;
+}
+
+.instr-ref {
+  margin-bottom: 4px;
+  padding: 4px 8px;
+  background-color: #f7f9fc;
+  border-left: 3px solid #b6c9e2;
+  color: #555;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.instr-preview {
+  margin-top: 4px;
+  padding: 6px 10px;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.instr-group {
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.instr-group legend {
+  font-weight: bold;
+  padding: 0 4px;
+}
+
+.instr-item {
+  margin-bottom: 8px;
+  padding-left: 8px;
+  border-left: 3px solid #e3e3e3;
+}
+
+.instr-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.instr-item-label {
+  font-size: 0.85em;
+  color: #666;
+}
+
+.instr-item-tools button {
+  padding: 0 6px;
+  margin-left: 2px;
+  font-size: 12px;
+}
+
+.instr-add-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+  font-size: 0.9em;
+}
+
+.warn-box {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background-color: #fff6e5;
+  border: 1px solid #f0c674;
+  border-radius: 4px;
+  color: #7a4a00;
+}
