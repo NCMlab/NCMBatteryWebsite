@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import * as api from "./api";
 import { draftFromBattery } from "./draft";
 import { iconForTaskType } from "./iconMap";
@@ -8,10 +8,9 @@ import { iconForTaskType } from "./iconMap";
 function BatteryView({ draft, setDraft }) {
   const { batteryId } = useParams();
   const navigate = useNavigate();
+  const backTo = useLocation().state?.backTo;
   const [battery, setBattery] = useState(null);
   const [error, setError] = useState(null);
-  // "<sort_order>-<type>" -> loaded JSON, for the per-task "Show" toggles
-  const [expanded, setExpanded] = useState({});
 
   useEffect(() => {
     let cancelled = false;
@@ -24,26 +23,10 @@ function BatteryView({ draft, setDraft }) {
     };
   }, [batteryId]);
 
-  const toggle = async (sortOrder, type, id) => {
-    const key = `${sortOrder}-${type}`;
-    if (expanded[key]) {
-      setExpanded(({ [key]: _, ...rest }) => rest);
-      return;
-    }
-    try {
-      const rec = await api.getRecord(type, id);
-      // An instruction set is shown as { "EN": {...}, "FR": {...} }.
-      const body =
-        type === "parameter" ? rec.parameters : Object.fromEntries(rec.translations.map((t) => [t.language, t.instructions]));
-      setExpanded((e) => ({ ...e, [key]: body }));
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleCopy = () => {
+  // edit=false: "Edit as copy" (saved under a new index); edit=true: "Edit" (saved back in place).
+  const handleCopy = (edit = false) => {
     if (draft.items.length > 0 && !window.confirm("Replace the battery currently in the builder?")) return;
-    setDraft(draftFromBattery(battery));
+    setDraft(draftFromBattery(battery, null, { edit }));
     navigate("/");
   };
 
@@ -67,30 +50,21 @@ function BatteryView({ draft, setDraft }) {
     ["Created", battery.created_at],
   ];
 
-  const jsonToggle = (sortOrder, type, id, label) => {
-    if (!id) return <i>none</i>;
-    const key = `${sortOrder}-${type}`;
-    return (
-      <>
-        {label}{" "}
-        <button className="link-button" onClick={() => toggle(sortOrder, type, id)}>
-          {expanded[key] ? "Hide" : "Show"}
-        </button>
-      </>
-    );
-  };
-
   return (
     <div className="app-container">
       <p>
-        <Link to="/batteries">← Batteries</Link>
+        {/* A page that links here can pass state.backTo = { path, label } (e.g. the session it came from). */}
+        <Link to={backTo?.path ?? "/batteries"}>← {backTo?.label ?? "Batteries"}</Link>
       </p>
       <div className="toolbar">
         <h2 style={{ margin: 0 }}>
           Battery {battery.battery_index}: {battery.battery_name}
         </h2>
         <span className="nav-spacer" />
-        <button onClick={handleCopy}>Edit as copy</button>
+        <button onClick={() => handleCopy(true)} title="Change this battery itself; its index stays the same">
+          Edit
+        </button>
+        <button onClick={() => handleCopy()}>Edit as copy</button>
       </div>
 
       <table className="data-table details-table">
@@ -116,44 +90,33 @@ function BatteryView({ draft, setDraft }) {
           </tr>
         </thead>
         <tbody>
-          {battery.tasks.map((t) => {
-            const pKey = `${t.sort_order}-parameter`;
-            const iKey = `${t.sort_order}-instruction`;
-            return (
-              <React.Fragment key={t.sort_order}>
-                <tr>
-                  <td>{t.sort_order}</td>
-                  <td className="task-cell">
-                    <img src={iconForTaskType(t.icon_file)} alt="" />
-                    {t.task_name}
-                  </td>
-                  <td>{t.icon_name}</td>
-                  <td>{jsonToggle(t.sort_order, "parameter", t.parameter_id, t.parameter_name)}</td>
-                  <td>
-                    {jsonToggle(
-                      t.sort_order,
-                      "instruction",
-                      t.instruction_set_id,
-                      t.instruction_name && (
-                        <Link to={`/library/instruction/${t.instruction_set_id}`}>
-                          {t.instruction_name} ({t.instruction_languages.join(", ")})
-                        </Link>
-                      )
-                    )}
-                  </td>
-                </tr>
-                {(expanded[pKey] || expanded[iKey]) && (
-                  <tr>
-                    <td />
-                    <td colSpan={4}>
-                      {expanded[pKey] && <pre className="json-view">{JSON.stringify(expanded[pKey], null, 2)}</pre>}
-                      {expanded[iKey] && <pre className="json-view">{JSON.stringify(expanded[iKey], null, 2)}</pre>}
-                    </td>
-                  </tr>
+          {battery.tasks.map((t) => (
+            <tr key={t.sort_order}>
+              <td>{t.sort_order}</td>
+              <td className="task-cell">
+                <img src={iconForTaskType(t.icon_file)} alt="" />
+                {t.task_name}
+              </td>
+              <td>{t.icon_name}</td>
+              {/* Each set opens on its own page, as a form or as text boxes. */}
+              <td>
+                {t.parameter_id ? (
+                  <Link to={`/library/parameter/${t.parameter_id}`}>{t.parameter_name}</Link>
+                ) : (
+                  <i>none</i>
                 )}
-              </React.Fragment>
-            );
-          })}
+              </td>
+              <td>
+                {t.instruction_set_id ? (
+                  <Link to={`/library/instruction/${t.instruction_set_id}`}>
+                    {t.instruction_name} ({t.instruction_languages.join(", ")})
+                  </Link>
+                ) : (
+                  <i>none</i>
+                )}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

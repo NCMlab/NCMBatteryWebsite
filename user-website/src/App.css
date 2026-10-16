@@ -616,3 +616,139 @@ code.instr-code {
   border-radius: 4px;
   color: #7a4a00;
 }
+
+/* -- Sessions (src/sessions/) -- */
+
+.session-preview {
+  display: inline-block;
+  min-width: 360px;
+  max-width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+
+.session-preview-title {
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.session-preview-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.session-preview-rownum {
+  width: 52px;
+  flex-shrink: 0;
+  align-self: center;
+  font-size: 11px;
+  color: #888;
+}
+
+.session-preview-button {
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  padding: 6px 10px;
+  border: 1px solid #9bb3cf;
+  border-radius: 4px;
+  background-color: white;
+  text-align: center;
+}
+
+.session-preview-button.user-choice {
+  border-style: dashed;
+}
+
+.session-preview-button.missing {
+  border-color: #e0a040;
+  background-color: #fff6e5;
+}
+
+.session-preview-name {
+  font-size: 14px;
+}
+
+.session-preview-meta {
+  font-size: 11px;
+  color: #777;
+}
+
+.session-buttons input[type="text"],
+.session-buttons input[type="number"],
+.session-buttons select {
+  padding: 3px 4px;
+  font-size: 13px;
+}
+
+.session-buttons input[type="text"] {
+  width: 100%;
+  min-width: 160px;
+  box-sizing: border-box;
+}
+
+.session-buttons input.short-input {
+  min-width: 0;
+  width: 110px;
+}
+
+.session-buttons .num-input {
+  width: 56px;
+}
+
+.session-buttons .num-input.wide {
+  width: 80px;
+}
+
+.session-battery-name {
+  font-size: 11px;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-ref {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #666;
+}
+
+.session-advanced {
+  margin: 4px 0 12px;
+  font-size: 0.9em;
+}
+
+a.session-preview-button.linked {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+a.session-preview-button.linked:hover {
+  border-color: #1a5fb4;
+  background-color: #eef4fb;
+}
+
+.session-link-box {
+  margin: 8px 0 12px;
+  padding: 10px 14px;
+  border: 1px solid #9bb3cf;
+  border-radius: 4px;
+  background-color: #eef4fb;
+}
+
+.session-link-box label {
+  display: block;
+  margin: 4px 0;
+}
+
+.session-link-box p {
+  margin: 4px 0 8px;
+}

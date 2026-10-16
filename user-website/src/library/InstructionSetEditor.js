@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import * as api from "../api";
 import { useAuth } from "../AuthContext";
 import InstructionFields from "./InstructionFields";
-import JsonEditor, { parseJson } from "./JsonEditor";
 import { LANGUAGES, languageLabel } from "./languages";
 import { NAME_PATTERN, suggestCopyName } from "./copyName";
 
@@ -32,7 +31,6 @@ function InstructionSetEditor({ mode }) {
   const [translations, setTranslations] = useState([]); // copy/new: [{ language, value }] in display order
   const [addValue, setAddValue] = useState(null); // addLanguage: the new language's text
   const [active, setActive] = useState("EN");
-  const [jsonText, setJsonText] = useState(null); // non-null while the JSON view is open
   const [showReference, setShowReference] = useState(true);
   const [newLang, setNewLang] = useState(""); // add-language mode / "+ Add language" in the other modes
   const [otherLang, setOtherLang] = useState("");
@@ -91,7 +89,6 @@ function InstructionSetEditor({ mode }) {
   // New mode: copy every language of the "start from" set, or start blank in EN.
   useEffect(() => {
     if (mode !== "new") return;
-    setJsonText(null);
     if (!startFrom) {
       setTranslations([{ language: "EN", value: {} }]);
       setActive("EN");
@@ -133,10 +130,8 @@ function InstructionSetEditor({ mode }) {
   const referenceLanguage = mode === "addLanguage" ? copyFrom : "EN";
 
   const switchLanguage = (lang) => {
-    if (jsonText !== null && parseJson(jsonText).error) return setError("Fix the JSON before switching language.");
     setError(null);
     setActive(lang);
-    if (jsonText !== null) setJsonText(JSON.stringify(translations.find((t) => t.language === lang).value, null, 2));
   };
 
   const addTranslation = () => {
@@ -155,25 +150,15 @@ function InstructionSetEditor({ mode }) {
     const rest = translations.filter((t) => t.language !== current.language);
     setTranslations(rest);
     setActive(rest[0].language);
-    setJsonText(null);
   };
 
   const editorValue = mode === "addLanguage" ? addValue : current?.value;
   const setEditorValue = mode === "addLanguage" ? setAddValue : setCurrentValue;
-  const jsonError = jsonText !== null ? parseJson(jsonText).error : null;
-
-  const openJson = () => setJsonText(JSON.stringify(editorValue ?? {}, null, 2));
-  const changeJson = (text) => {
-    setJsonText(text);
-    const { value } = parseJson(text);
-    if (value) setEditorValue(value);
-  };
 
   const nameTaken = taskSets.some((s) => s.instruction_name === name.trim());
 
   const handleSave = async () => {
     setError(null);
-    if (jsonError) return setError(`Fix the JSON first: ${jsonError}`);
     const all = mode === "addLanguage" ? [{ language: addLangCode, value: addValue }] : translations;
     const empty = all.filter((t) => !t.value || Object.keys(t.value).length === 0).map((t) => t.language);
     if (empty.length) return setError(`These languages have no fields yet: ${empty.join(", ")}.`);
@@ -266,7 +251,6 @@ function InstructionSetEditor({ mode }) {
                   if (!window.confirm(`Start again from ${e.target.value}? Text typed so far is replaced.`)) return;
                   setCopyFrom(e.target.value);
                   setAddValue(clone(sourceValue(e.target.value)));
-                  setJsonText(null);
                 }}
               >
                 {source.translations.map((t) => (
@@ -375,32 +359,17 @@ function InstructionSetEditor({ mode }) {
       )}
 
       {editorValue && (
-        <>
-          <div className="view-toggle">
-            <button type="button" className={jsonText === null ? "selected" : ""} onClick={() => !jsonError && setJsonText(null)}>
-              Text boxes
-            </button>
-            <button type="button" className={jsonText !== null ? "selected" : ""} onClick={openJson}>
-              JSON
-            </button>
-            {jsonError && <span className="hint">Fix the JSON to return to the text boxes.</span>}
-          </div>
-          {jsonText === null ? (
-            <InstructionFields
-              value={editorValue}
-              onChange={setEditorValue}
-              reference={reference}
-              referenceLanguage={referenceLanguage}
-            />
-          ) : (
-            <JsonEditor text={jsonText} onChange={changeJson} />
-          )}
-        </>
+        <InstructionFields
+          value={editorValue}
+          onChange={setEditorValue}
+          reference={reference}
+          referenceLanguage={referenceLanguage}
+        />
       )}
 
       {error && <p className="error-text">{error}</p>}
       <p>
-        <button className="primary" onClick={handleSave} disabled={saving || !!jsonError || !editorValue}>
+        <button className="primary" onClick={handleSave} disabled={saving || !editorValue}>
           {saving
             ? "Saving..."
             : mode === "addLanguage"

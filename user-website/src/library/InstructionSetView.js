@@ -16,7 +16,6 @@ function InstructionSetView() {
   const { csrfToken } = useAuth();
   const [record, setRecord] = useState(null);
   const [error, setError] = useState(null);
-  const [view, setView] = useState("text");
   const [compare, setCompare] = useState(false);
 
   useEffect(() => {
@@ -171,24 +170,14 @@ function InstructionSetView() {
         as a new set). Adding a language doesn't change the existing ones, so it's allowed at any time.
       </p>
 
-      <div className="view-toggle">
-        <button type="button" className={view === "text" ? "selected" : ""} onClick={() => setView("text")}>
-          Text
-        </button>
-        <button type="button" className={view === "json" ? "selected" : ""} onClick={() => setView("json")}>
-          JSON
-        </button>
-        <span className="hint">Created {translation.created_at}</span>
-      </div>
-      {view === "text" ? (
-        <InstructionFields
-          value={translation.instructions}
-          reference={compare && language !== "EN" ? en?.instructions : null}
-          readOnly
-        />
-      ) : (
-        <pre className="json-view json-view-full">{JSON.stringify(translation.instructions, null, 2)}</pre>
-      )}
+      <p className="hint">
+        {language} created {translation.created_at}
+      </p>
+      <InstructionFields
+        value={translation.instructions}
+        reference={compare && language !== "EN" ? en?.instructions : null}
+        readOnly
+      />
     </div>
   );
 }

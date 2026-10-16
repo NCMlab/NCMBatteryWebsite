@@ -34,12 +34,13 @@ function BatteryList({ draft, setDraft }) {
     }
   };
 
-  const handleCopy = async (row) => {
+  // edit=false: "Edit as copy" (saved under a new index); edit=true: "Edit" (saved back in place).
+  const handleCopy = async (row, edit = false) => {
     if (draft.items.length > 0 && !window.confirm("Replace the battery currently in the builder?")) return;
     setError(null);
     try {
       const record = await api.getRecord("battery", row.battery_id);
-      setDraft(draftFromBattery(record));
+      setDraft(draftFromBattery(record, null, { edit }));
       navigate("/");
     } catch (err) {
       setError(err.message);
@@ -64,9 +65,10 @@ function BatteryList({ draft, setDraft }) {
     <div className="app-container">
       <h2>Batteries</h2>
       <p className="hint">
-        Batteries are never changed in place. <b>Edit as copy</b> loads a battery into the builder; saving it
-        creates a new battery index, and you can choose to deactivate the original. A battery must be
-        deactivated before it can be deleted.
+        <b>Edit</b> loads a battery into the builder and saves your changes back to the same index, so every JATOS
+        link and session button using it runs the new version. <b>Edit as copy</b> saves them as a new battery index
+        instead, and you can choose to deactivate the original. A battery must be deactivated before it can be
+        deleted.
       </p>
       {error && <p className="error-text">{error}</p>}
       <div className="toolbar">
@@ -104,6 +106,7 @@ function BatteryList({ draft, setDraft }) {
                   <Link className="button" to={`/batteries/${r.battery_id}`}>
                     View
                   </Link>
+                  <button onClick={() => handleCopy(r, true)}>Edit</button>
                   <button onClick={() => handleCopy(r)}>Edit as copy</button>
                   <button onClick={() => handleToggle(r)}>{r.active ? "Deactivate" : "Activate"}</button>
                   <button

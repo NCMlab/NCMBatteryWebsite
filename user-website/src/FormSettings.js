@@ -136,8 +136,12 @@ function FormSettings({ draft, saveFormSettings }) {
       setSaveError(`"${name}" already exists for this task. Choose a new name; existing sets are never overwritten.`);
       return;
     }
+    if (!schemaDef) {
+      setSaveError("This task type has no parameter form, so a new set can't be made for it here.");
+      return;
+    }
     if (parsed.error) {
-      setSaveError(`Fix the JSON first: ${parsed.error}`);
+      setSaveError(`These settings can't be saved: ${parsed.error}`);
       return;
     }
     const problems = validateParameters(schemaDef, parsed.value);

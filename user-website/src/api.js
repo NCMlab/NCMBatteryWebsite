@@ -59,6 +59,11 @@ export function listBatteries() {
   return getJSON(`${API_BASE}/API_list_config.php?resource=batteries`);
 }
 
+/** Rows: { session_id, session_name, languages, button_count, battery_indexes, created_at }. */
+export function listSessions() {
+  return getJSON(`${API_BASE}/API_list_config.php?resource=sessions`);
+}
+
 export function getParameterDetail(taskName, parameterName) {
   const q = new URLSearchParams({ type: "parameters", task: taskName, name: parameterName });
   return getJSON(`${API_BASE}/API_task_config.php?${q}`);
@@ -116,11 +121,63 @@ export function createBattery(csrfToken, batteryPayload) {
   return postJSON(`${ADMIN_API_BASE}/API_admin_create_battery.php`, batteryPayload, csrfToken);
 }
 
-// -- Admin reads and lifecycle (copy-on-edit) ---------------------------------
-// Nothing is edited in place: the UI loads a record with getRecord(), and saves
-// changes as a NEW record via createParameter/createInstruction/createBattery.
+// -- In-place edits: change an existing set or battery (everything that uses it sees the change) --
 
-/** type is "parameter" | "instruction" | "battery"; id is that table's primary key (instruction_set_id for instructions). */
+/** Replaces a parameter set's values; name, task type and language stay. Returns used_by battery indexes. */
+export function updateParameter(csrfToken, { parameterId, parameters }) {
+  return postJSON(`${ADMIN_API_BASE}/API_admin_update_parameter.php`, { parameter_id: parameterId, parameters }, csrfToken);
+}
+
+/** Replaces a battery's header and task list; its battery_index stays. */
+export function updateBattery(csrfToken, batteryId, batteryPayload) {
+  return postJSON(`${ADMIN_API_BASE}/API_admin_update_battery.php`, { ...batteryPayload, battery_id: batteryId }, csrfToken);
+}
+
+/**
+ * Creates a new session; languages is { EN: { title, chooser_index, run_name_check, buttons: [
+ * { name, battery_index, button_row, bit_index, phase, test, button_usage_type }] }, ... }.
+ */
+export function createSession(csrfToken, { sessionName, languages }) {
+  return postJSON(`${ADMIN_API_BASE}/API_admin_create_session.php`, { session_name: sessionName, languages }, csrfToken);
+}
+
+/** Adds one language to an existing session (refused if it already has it). */
+export function addSessionLanguage(csrfToken, { sessionId, language, ...version }) {
+  return postJSON(
+    `${ADMIN_API_BASE}/API_admin_add_session_language.php`,
+    { session_id: sessionId, language, ...version },
+    csrfToken
+  );
+}
+
+/**
+ * Points session buttons at another battery, in place (the one in-place change to a session).
+ * scope: "button" (needs language + sortOrder), "language" or "session"; see the PHP file.
+ */
+export function setSessionBattery(csrfToken, { sessionId, fromBatteryIndex, toBatteryIndex, scope, language, sortOrder }) {
+  return postJSON(
+    `${ADMIN_API_BASE}/API_admin_set_session_battery.php`,
+    {
+      session_id: sessionId,
+      from_battery_index: fromBatteryIndex,
+      to_battery_index: toBatteryIndex,
+      scope,
+      language,
+      sort_order: sortOrder,
+    },
+    csrfToken
+  );
+}
+
+export function deleteSessionLanguage(csrfToken, sessionId, language) {
+  return postJSON(`${ADMIN_API_BASE}/API_admin_delete.php`, { type: "session_language", id: sessionId, language }, csrfToken);
+}
+
+// -- Admin reads and lifecycle (copy-on-edit) ---------------------------------
+// "Edit as copy" loads a record with getRecord() and saves it as a NEW record via
+// createParameter/createInstruction/createBattery; "Edit" saves it back with update*().
+
+/** type is "parameter" | "instruction" | "battery" | "session"; id is that table's primary key (instruction_set_id for instructions). */
 export function getRecord(type, id) {
   const q = new URLSearchParams({ type, id });
   return fetch(`${ADMIN_API_BASE}/API_admin_get.php?${q}`, { credentials: "include" }).then(handleResponse);

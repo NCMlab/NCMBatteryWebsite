@@ -10,6 +10,7 @@ function NavBar() {
         Battery builder
       </NavLink>
       <NavLink to="/batteries">Batteries</NavLink>
+      <NavLink to="/sessions">Sessions</NavLink>
       <NavLink to="/library/parameter">Parameter sets</NavLink>
       <NavLink to="/library/instruction">Instruction sets</NavLink>
       <span className="nav-spacer" />

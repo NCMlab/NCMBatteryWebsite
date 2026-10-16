@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import * as api from "../api";
 import { useAuth } from "../AuthContext";
 import { KINDS } from "./kinds";
@@ -10,6 +10,7 @@ function ConfigView() {
   const { kind, id } = useParams();
   const cfg = KINDS[kind];
   const navigate = useNavigate();
+  const location = useLocation();
   const { csrfToken } = useAuth();
   const [record, setRecord] = useState(null);
   const [schemaDef, setSchemaDef] = useState(null);
@@ -55,6 +56,15 @@ function ConfigView() {
       <div className="toolbar">
         <h2 style={{ margin: 0 }}>{name}</h2>
         <span className="nav-spacer" />
+        {kind === "parameter" && (
+          <Link
+            className="button"
+            to={`/library/${kind}/${record[cfg.idKey]}/edit`}
+            title="Change this set itself; batteries that use it run the new values"
+          >
+            Edit
+          </Link>
+        )}
         <Link className="button" to={`/library/${kind}/${record[cfg.idKey]}/copy`}>
           Edit as copy
         </Link>
@@ -67,6 +77,7 @@ function ConfigView() {
           Delete
         </button>
       </div>
+      {location.state?.message && <p className="ok-text">{location.state.message}</p>}
       {error && <p className="error-text">{error}</p>}
 
       <table className="data-table details-table">
@@ -102,16 +113,7 @@ function ConfigView() {
       </table>
 
       <h3>Contents</h3>
-      {kind === "parameter" ? (
-        <ParameterEditor
-          schemaDef={schemaDef}
-          text={JSON.stringify(record[cfg.bodyKey], null, 2)}
-          onChange={() => {}}
-          readOnly
-        />
-      ) : (
-        <pre className="json-view json-view-full">{JSON.stringify(record[cfg.bodyKey], null, 2)}</pre>
-      )}
+      <ParameterEditor schemaDef={schemaDef} text={JSON.stringify(record[cfg.bodyKey], null, 2)} onChange={() => {}} readOnly />
     </div>
   );
 }

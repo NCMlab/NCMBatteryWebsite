@@ -60,9 +60,18 @@ function ConfigLibrary() {
     <div className="app-container">
       <h2>{cfg.title}</h2>
       <p className="hint">
-        Sets are never changed in place. <b>Edit as copy</b> opens a set and saves your changes under a new
-        name, so batteries that already use the original are unaffected. A set can only be deleted when no
-        battery uses it.
+        {kind === "parameter" ? (
+          <>
+            <b>Edit</b> changes a set itself: every battery that uses it runs the new values. <b>Edit as copy</b> saves
+            your changes under a new name, so batteries that use the original are unaffected.
+          </>
+        ) : (
+          <>
+            Sets are never changed in place. <b>Edit as copy</b> opens a set and saves your changes under a new
+            name, so batteries that already use the original are unaffected.
+          </>
+        )}{" "}
+        A set can only be deleted when no battery uses it.
       </p>
       {location.state?.message && <p className="ok-text">{location.state.message}</p>}
       {error && <p className="error-text">{error}</p>}
@@ -108,6 +117,11 @@ function ConfigLibrary() {
                   <Link className="button" to={`/library/${kind}/${r[cfg.idKey]}`}>
                     View
                   </Link>
+                  {kind === "parameter" && (
+                    <Link className="button" to={`/library/${kind}/${r[cfg.idKey]}/edit`}>
+                      Edit
+                    </Link>
+                  )}
                   <Link className="button" to={`/library/${kind}/${r[cfg.idKey]}/copy`}>
                     Edit as copy
                   </Link>

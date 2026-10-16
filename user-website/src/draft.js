@@ -6,6 +6,14 @@ import { v4 as uuidv4 } from "uuid";
 export const emptyDraft = () => ({
   // { battery_id, battery_index } of the battery this draft was copied from, or null.
   sourceBattery: null,
+  // { battery_id, battery_index } when the builder is editing that battery in place ("Edit"),
+  // so saving updates it instead of creating a new one. null for a new battery or a copy.
+  editBattery: null,
+  // Set when the battery was opened from a session button ("Edit battery"), so that after
+  // saving the builder can point the session at the new battery:
+  // { sessionId, sessionName, language, sortOrder, buttonName, fromBatteryIndex,
+  //   sameInLanguage, sameInSession }  (the last two: how many buttons use that battery)
+  sessionLink: null,
   header: {
     battery_index: "",
     battery_name: "The 3C Platform",
@@ -24,12 +32,17 @@ export const emptyDraft = () => ({
   items: [],
 });
 
-/** Turns an API_admin_get.php battery record into a builder draft for copy-on-edit. */
-export function draftFromBattery(b) {
+/**
+ * Turns an API_admin_get.php battery record into a builder draft: a copy to save under a new
+ * index (default), or with { edit: true } the battery itself, saved back in place.
+ */
+export function draftFromBattery(b, sessionLink = null, { edit = false } = {}) {
   return {
-    sourceBattery: { battery_id: b.battery_id, battery_index: b.battery_index },
+    sourceBattery: edit ? null : { battery_id: b.battery_id, battery_index: b.battery_index },
+    editBattery: edit ? { battery_id: b.battery_id, battery_index: b.battery_index } : null,
+    sessionLink,
     header: {
-      battery_index: "", // a copy always needs its own, unused index
+      battery_index: edit ? b.battery_index : "", // a copy always needs its own, unused index
       battery_name: b.battery_name ?? "",
       description: b.description ?? "",
       battery_instructions: b.battery_instructions ?? "",

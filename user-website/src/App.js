@@ -11,6 +11,9 @@ import ConfigEditor from "./library/ConfigEditor";
 import ConfigView from "./library/ConfigView";
 import InstructionSetView from "./library/InstructionSetView";
 import InstructionSetEditor from "./library/InstructionSetEditor";
+import SessionList from "./sessions/SessionList";
+import SessionView from "./sessions/SessionView";
+import SessionEditor from "./sessions/SessionEditor";
 import { AuthProvider, useAuth } from "./AuthContext";
 import { emptyDraft } from "./draft";
 import "./App.css";
@@ -87,6 +90,47 @@ function AppRoutes() {
           </RequireAuth>
         }
       />
+      {/* Sessions: the button pages that launch batteries (SessionChooser_config.js). */}
+      <Route
+        path="/sessions"
+        element={
+          <RequireAuth>
+            <SessionList />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/sessions/new"
+        element={
+          <RequireAuth>
+            <SessionEditor mode="new" key="new" />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/sessions/:id"
+        element={
+          <RequireAuth>
+            <SessionView draft={draft} setDraft={setDraft} />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/sessions/:id/copy"
+        element={
+          <RequireAuth>
+            <SessionEditor mode="copy" key="copy" />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/sessions/:id/add-language"
+        element={
+          <RequireAuth>
+            <SessionEditor mode="addLanguage" key="addLanguage" />
+          </RequireAuth>
+        }
+      />
       {/* Instruction sets have their own view/editor pages (several languages per set); these
           static routes win over the /library/:kind/... ones below. */}
       <Route
@@ -146,11 +190,20 @@ function AppRoutes() {
           </RequireAuth>
         }
       />
+      {/* In-place edit, parameter sets only (ConfigEditor refuses it for instruction sets). */}
+      <Route
+        path="/library/:kind/:id/edit"
+        element={
+          <RequireAuth>
+            <ConfigEditor mode="edit" key="edit" />
+          </RequireAuth>
+        }
+      />
       <Route
         path="/library/:kind/:id/copy"
         element={
           <RequireAuth>
-            <ConfigEditor />
+            <ConfigEditor key="copy" />
           </RequireAuth>
         }
       />
